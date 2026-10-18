@@ -1,9 +1,16 @@
 const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
-// Mirrors Google's gtag.js bootstrap so events queue before the script loads.
-function gtag(...args) {
+/**
+ * Mirrors Google's official gtag.js snippet: commands are queued on
+ * window.dataLayer by a window.gtag function, and gtag.js processes that
+ * queue once it loads.
+ */
+function bootstrapGtag() {
   window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push(args);
+  window.gtag = function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments);
+  };
 }
 
 /**
@@ -14,20 +21,22 @@ export function initAnalytics() {
   if (!MEASUREMENT_ID || window.__gaInitialized) return;
   window.__gaInitialized = true;
 
+  bootstrapGtag();
+
   const script = document.createElement('script');
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
   document.head.appendChild(script);
 
-  gtag('js', new Date());
+  window.gtag('js', new Date());
   // Page views are sent manually on route change, so skip the automatic one.
-  gtag('config', MEASUREMENT_ID, { send_page_view: false });
+  window.gtag('config', MEASUREMENT_ID, { send_page_view: false });
 }
 
 export function trackPageView(path) {
-  if (!MEASUREMENT_ID) return;
+  if (!MEASUREMENT_ID || !window.gtag) return;
 
-  gtag('event', 'page_view', {
+  window.gtag('event', 'page_view', {
     page_path: path,
     page_location: window.location.href,
     page_title: document.title,
@@ -35,7 +44,7 @@ export function trackPageView(path) {
 }
 
 export function trackEvent(name, params = {}) {
-  if (!MEASUREMENT_ID) return;
+  if (!MEASUREMENT_ID || !window.gtag) return;
 
-  gtag('event', name, params);
+  window.gtag('event', name, params);
 }
