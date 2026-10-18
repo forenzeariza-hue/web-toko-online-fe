@@ -8,6 +8,7 @@ import {
 } from 'react';
 
 import * as authService from '../services/authService.js';
+import { trackEvent } from '../utils/analytics.js';
 import {
   AUTH_UNAUTHORIZED_EVENT,
   clearAuth,
@@ -40,6 +41,7 @@ export function AuthProvider({ children }) {
     async (email, password) => {
       const data = await authService.login({ email, password });
       applyAuth(data);
+      trackEvent('login', { method: 'password' });
       return data;
     },
     [applyAuth]
@@ -49,6 +51,7 @@ export function AuthProvider({ children }) {
     async (nama, email, password) => {
       const data = await authService.register({ nama, email, password });
       applyAuth(data);
+      trackEvent('register', { method: 'password' });
       return data;
     },
     [applyAuth]

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import Loader from '../components/Loader.jsx';
 import { getProductById } from '../services/productService.js';
+import { trackEvent } from '../utils/analytics.js';
 import { formatRupiah } from '../utils/format.js';
 
 export default function ProductDetail() {
@@ -42,6 +43,17 @@ export default function ProductDetail() {
       active = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!product) return;
+
+    trackEvent('view_product', {
+      product_id: product._id,
+      product_name: product.nama,
+      product_kategori: product.kategori,
+      product_harga: product.harga,
+    });
+  }, [product]);
 
   if (loading) {
     return <Loader text="Memuat detail produk..." />;

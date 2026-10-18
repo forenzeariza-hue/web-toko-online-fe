@@ -4,7 +4,10 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { initAnalytics } from './utils/analytics.js';
 import './index.css';
+
+initAnalytics();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
